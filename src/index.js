@@ -2,8 +2,8 @@ import * as d3 from 'd3';
 //import '../resources/MonthlySales.csv';
 
 var margin = {top: 80, right: 20, bottom: 80, left: 50},
-  width = 400 - margin.left - margin.right,
-  height = 270 - margin.top - margin.bottom;
+  width = 600 - margin.left - margin.right,
+  height = 670 - margin.top - margin.bottom;
 
 var svg = d3.select("body").append("svg")
   .attr("width", width + margin.left + margin.right)
@@ -12,35 +12,46 @@ var svg = d3.select("body").append("svg")
   .attr("transform",
     "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleTime().range([0, width]);
-var y = d3.scaleLinear().range([height, 0]);
+var x = d3.scaleLinear().range([0, width]).domain([0,150]);
+var y = d3.scaleLinear().range([height, 0]).domain([0,350]);
 
 var lineFun = d3.line()
   .x(function(d){
-    console.log(x(d.month));
-    return x(d.month);})
+//    console.log((d.month));
+    return d.month;})
   .y(function(d){
-    console.log(y(d.sales));
-    return y(d.sales);});
+//    console.log((d.sales));
+    return (height - d.sales);})
+  .curve(d3.curveMonotoneX)
 
+d3.csv("MonthlySales.csv").then(function(data){
 
-d3.csv("MonthlySales.csv", function(data){
-
-//  console.log(data);
+  console.log(data);
 
   var viz1 = svg.append("path")
-    .datum([data])
+    .data([data])
     .attr("d",lineFun)
-    .attr("stroke","purple")
-    .attr("stroke-width","12px");
+    .attr("class","line");
+
+  data.forEach(function(d){
+
+
+  svg.append("circle")
+    .attr("cx", d.month)
+    .attr("cy", height-d.sales)
+    .attr("r", 3)
+    .attr("stroke", "blue");
+  })
 
   // Add the X Axis
   svg.append("g")
+    .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x));
 
   // Add the Y Axis
   svg.append("g")
+    .attr("class", "y axis")
     .call(d3.axisLeft(y));
 });
 
